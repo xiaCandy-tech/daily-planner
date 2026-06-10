@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>每日健康作息</title>
+<style>
+:root {
+  --bg:#F7F5F0;--sur:#FFF;--bd:#E5E2DA;
+  --t1:#1A1A1A;--t2:#666560;--t3:#AAA89F;
+  --pu:#534AB7;--pu2:#EEEDFE;
+  --gr:#1D9E75;--gr2:#E1F5EE;
+  --am:#BA7517;--am2:#FAEEDA;
+  --co:#D85A30;--co2:#FAECE7;
+  --bl:#185FA5;--bl2:#E6F1FB;
+  --gn:#3B6D11;--gn2:#EAF3DE;
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,"PingFang SC",sans-serif;background:var(--bg);color:var(--t1);font-size:15px;min-height:100vh;}
+.app{max-width:480px;margin:0 auto;padding-bottom:84px;}
+
+/* Header */
+.hdr{background:#1A1A1A;color:#fff;padding:16px 16px 0;position:sticky;top:0;z-index:20;}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.hdr-title{font-size:18px;font-weight:600;}
+.hdr-date{font-size:12px;color:#888;}
+.tabs{display:flex;gap:2px;}
+.tab{padding:7px 14px;border-radius:8px 8px 0 0;font-size:13px;cursor:pointer;border:none;background:transparent;color:#888;}
+.tab.on{background:var(--bg);color:var(--t1);font-weight:500;}
+
+/* Pages */
+.page{display:none;padding:14px 14px 0;}
+.page.on{display:block;}
+
+/* Cards */
+.card{background:var(--sur);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px;}
+.card-label{font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;}
+
+/* Sleep */
+.sleep-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.sf label{font-size:12px;color:var(--t2);display:block;margin-bottom:4px;}
+.sf input,.sf select{width:100%;padding:8px 9px;border:1px solid var(--bd);border-radius:var(--rs);font-size:14px;background:var(--bg);color:var(--t1);}
+
+/* Progress */
+.prog-row{display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:7px;}
+.prog-track{height:6px;background:var(--bg);border-radius:3px;}
+.prog-fill{height:6px;border-radius:3px;background:var(--gr);transition:width .4s;}
+.prog-pills{display:flex;gap:12px;margin-top:8px;}
+.pp{font-size:12px;color:var(--t3);}
+.pp b{color:var(--t1);}
+
+/* Neck banner */
+.neck-banner{background:var(--am2);border:1px solid #EF9F27;border-radius:var(--r);padding:11px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;}
+.neck-banner .ico{font-size:22px;flex-shrink:0;}
+.neck-banner .txt{font-size:13px;color:#633806;line-height:1.5;}
+
+/* Block list */
+.blk-section-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 6px 2px;}
+
+.blk{background:var(--sur);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:6px;overflow:hidden;}
+.blk-head{display:flex;align-items:stretch;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.blk-stripe{width:5px;flex-shrink:0;}
+.s-sleep{background:var(--pu);}
+.s-work{background:var(--bl);}
+.s-break{background:var(--gr);}
+.s-neck{background:var(--co);}
+.s-morning{background:var(--am);}
+.s-walk{background:var(--gn);}
+.s-wind{background:#999;}
+.s-light{background:#888;}
+
+.blk-body{flex:1;padding:10px 12px;}
+.blk-meta{display:flex;justify-content:space-between;align-items:center;}
+.blk-time{font-size:11px;color:var(--t3);}
+.blk-dur{font-size:11px;color:var(--t3);background:var(--bg);padding:1px 7px;border-radius:99px;}
+.blk-name-row{display:flex;align-items:center;gap:7px;margin-top:3px;}
+.blk-name{font-size:14px;font-weight:500;}
+.badge{font-size:11px;padding:2px 7px;border-radius:99px;}
+.bpu{background:var(--pu2);color:var(--pu);}
+.bbl{background:var(--bl2);color:var(--bl);}
+.bgr{background:var(--gr2);color:var(--gr);}
+.bco{background:var(--co2);color:var(--co);}
+.bam{background:var(--am2);color:var(--am);}
+.bgn{background:var(--gn2);color:var(--gn);}
+.bgy{background:#F1EFE8;color:#555;}
+.blk-desc{font-size:12px;color:var(--t2);margin-top:3px;line-height:1.5;}
+.blk-note-preview{font-size:12px;color:var(--t2);margin-top:5px;padding:5px 8px;background:var(--bg);border-radius:6px;}
+
+.blk-check{flex-shrink:0;padding:0 13px;display:flex;align-items:center;}
+.chk{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;background:var(--bg);}
+.chk.done{background:var(--gr);border-color:var(--gr);color:#fff;}
+.chk.skip{background:#F1EFE8;border-color:#ccc;color:#999;font-size:10px;}
+
+.blk-expand{border-top:1px solid var(--bd);padding:10px 12px;background:var(--bg);display:none;}
+.blk-expand.open{display:block;}
+.exp-lbl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.exp-ta{width:100%;padding:9px 10px;border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;background:var(--sur);color:var(--t1);resize:none;min-height:56px;font-family:inherit;}
+.exp-acts{display:flex;gap:6px;margin-top:8px;}
+.ea{padding:7px 13px;border-radius:var(--rs);font-size:12px;cursor:pointer;border:1px solid var(--bd);background:var(--sur);color:var(--t2);}
+.ea.green{background:var(--gr2);border-color:var(--gr);color:var(--gr);}
+.ea.gray{background:#F1EFE8;border-color:#ccc;color:#666;}
+
+/* Bottom cards */
+.mood-row{display:flex;gap:6px;margin-top:8px;}
+.mb{flex:1;padding:9px 0;border:1px solid var(--bd);border-radius:var(--rs);font-size:20px;cursor:pointer;background:var(--bg);text-align:center;}
+.mb.on{background:var(--sur);border-color:var(--t1);}
+.neck-toggle{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;background:var(--bg);border-radius:var(--rs);cursor:pointer;}
+.ntcb{width:20px;height:20px;border-radius:4px;border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--sur);flex-shrink:0;}
+.ntcb.on{background:var(--gr);border-color:var(--gr);color:#fff;}
+.note-ta{width:100%;padding:9px 10px;border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;background:var(--bg);color:var(--t1);resize:none;min-height:72px;font-family:inherit;margin-top:10px;}
+.save-btn{display:block;width:100%;padding:14px;background:var(--t1);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:500;cursor:pointer;margin-top:10px;}
+
+/* History */
+.hist-empty{text-align:center;padding:3rem 1rem;color:var(--t3);font-size:14px;}
+.hday{background:var(--sur);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:10px;overflow:hidden;}
+.hday-head{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.hday-date{font-size:14px;font-weight:500;}
+.hday-meta{font-size:12px;color:var(--t3);margin-top:2px;}
+.hday-body{border-top:1px solid var(--bd);padding:12px 14px;display:none;}
+.hday-body.open{display:block;}
+.hr{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--bg);}
+.hr:last-child{border:none;}
+.hl{color:var(--t2);}
+.hbi{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--bg);font-size:13px;align-items:flex-start;}
+.hbi:last-child{border:none;}
+.hbi-note{color:var(--t3);font-size:12px;margin-top:2px;}
+.hbadge{font-size:11px;padding:2px 8px;border-radius:99px;}
+
+/* Alarms page */
+.alarm-item{background:var(--sur);border:1px solid var(--bd);border-radius:var(--r);padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+.alarm-time{font-size:20px;font-weight:600;min-width:60px;color:var(--t1);}
+.alarm-info{flex:1;}
+.alarm-name{font-size:14px;font-weight:500;}
+.alarm-desc{font-size:12px;color:var(--t2);margin-top:2px;}
+.alarm-icon{font-size:22px;flex-shrink:0;}
+
+/* Toast */
+.toast{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);background:#1A1A1A;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:100;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+/* Bottom nav */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--sur);border-top:1px solid var(--bd);display:flex;z-index:10;}
+.bn{flex:1;padding:9px 0 14px;text-align:center;cursor:pointer;border:none;background:none;}
+.bn-ico{font-size:20px;display:block;margin-bottom:2px;}
+.bn-lbl{font-size:10px;color:var(--t3);}
+.bn.on .bn-lbl{color:var(--t1);font-weight:500;}
+
+@media(prefers-color-scheme:dark){
+  :root{--bg:#111110;--sur:#1C1C1A;--bd:#2E2E2B;--t1:#F0EEE8;--t2:#888780;--t3:#555450;}
+  .tab.on{background:#111110;color:#F0EEE8;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="hdr-title">每日健康作息</div>
+    <div class="hdr-date" id="hdr-date"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" onclick="goPage('today',this)">今天</button>
+    <button class="tab" onclick="goPage('history',this)">历史</button>
+    <button class="tab" onclick="goPage('alarms',this)">闹钟</button>
+    <button class="tab" onclick="goPage('rules',this)">规则</button>
+  </div>
+</div>
+
+<!-- TODAY -->
+<div id="pg-today" class="page on">
+
+  <div class="card" style="margin-top:0;">
+    <div class="card-label">今日睡眠</div>
+    <div class="sleep-grid">
+      <div class="sf"><label>入睡</label><input type="time" id="s-in" value="01:00"></div>
+      <div class="sf"><label>起床</label><input type="time" id="s-out" value="10:00"></div>
+      <div class="sf"><label>质量</label>
+        <select id="s-q"><option value="">—</option><option>好</option><option>一般</option><option>差</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:12px 14px;">
+    <div class="prog-row"><span>时间块打卡</span><span id="prog-txt">0/0</span></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-pills">
+      <div class="pp">完成 <b id="pm-d">0</b></div>
+      <div class="pp">跳过 <b id="pm-s">0</b></div>
+      <div class="pp">待打卡 <b id="pm-p">0</b></div>
+    </div>
+  </div>
+
+  <div class="neck-banner">
+    <div class="ico">🦴</div>
+    <div class="txt"><b>颈椎提醒：每45–60分钟必须起身拉伸！</b><br>转头、低头抬头各5次，肩膀绕圈。</div>
+  </div>
+
+  <div id="blocks-wrap"></div>
+
+  <div class="card">
+    <div class="card-label">今日状态</div>
+    <div class="mood-row" id="mood-row">
+      <div class="mb" data-m="😊" onclick="setMood(this)">😊</div>
+      <div class="mb" data-m="😐" onclick="setMood(this)">😐</div>
+      <div class="mb" data-m="😩" onclick="setMood(this)">😩</div>
+      <div class="mb" data-m="😤" onclick="setMood(this)">😤</div>
+      <div class="mb" data-m="🤒" onclick="setMood(this)">🤒</div>
+    </div>
+    <div class="neck-toggle" onclick="toggleNeck()">
+      <div class="ntcb" id="ntcb"></div>
+      <div style="font-size:13px;color:var(--t2);">今天颈椎按时活动了 ✓</div>
+    </div>
+    <textarea class="note-ta" id="day-note" placeholder="今天的情况、颈椎感受、明天想改进的..."></textarea>
+  </div>
+
+  <button class="save-btn" onclick="saveDay()">保存今天记录</button>
+  <div style="height:8px;"></div>
+</div>
+
+<!-- HISTORY -->
+<div id="pg-history" class="page">
+  <div id="hist-list"></div>
+</div>
+
+<!-- ALARMS -->
+<div id="pg-alarms" class="page">
+  <div style="background:var(--bl2);border:1px solid #8FBDE8;border-radius:var(--r);padding:12px 14px;margin-bottom:12px;font-size:13px;color:#0C447C;line-height:1.6;">
+    📱 <b>在 iPhone 设置这些闹钟</b><br>打开「时钟」→「闹钟」→「+」，逐条添加，标签填写对应名称，设为每天重复。
+  </div>
+  <div id="alarm-list"></div>
+</div>
+
+<!-- RULES -->
+<div id="pg-rules" class="page">
+  <div style="background:var(--co2);border:1px solid #F0997B;border-radius:var(--r);padding:14px;margin-bottom:10px;">
+    <div style="font-size:14px;font-weight:500;color:#712B13;margin-bottom:4px;">🦴 颈椎第一优先</div>
+    <div style="font-size:13px;color:#993C1D;line-height:1.7;">每 45–60 分钟必须起身，做 2 分钟拉伸。不做这个，工作再努力也是在透支身体。颈椎修复需要数周，别让它变得更糟。</div>
+  </div>
+  <div style="background:var(--co2);border:1px solid #F0997B;border-radius:var(--r);padding:14px;margin-bottom:10px;">
+    <div style="font-size:14px;font-weight:500;color:#712B13;margin-bottom:4px;">🛑 凌晨 1 点必须躺下</div>
+    <div style="font-size:13px;color:#993C1D;line-height:1.7;">颈椎在深度睡眠时修复。睡不够，白天再怎么注意姿势也恢复不了。</div>
+  </div>
+  <div style="background:var(--sur);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px;">
+    <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🚶 19:00 后不碰电脑</div>
+    <div style="font-size:13px;color:var(--t2);line-height:1.7;">散步是今天真正的下班时刻，不是中场休息。回来后再工作 = 颈椎永远无法放松。坚持2周，你会明显感觉不一样。</div>
+  </div>
+  <div style="background:var(--sur);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:10px;">
+    <div style="font-size:14px;font-weight:500;margin-bottom:4px;">🥗 12:00 离开屏幕吃午饭</div>
+    <div style="font-size:13px;color:var(--t2);line-height:1.7;">午休2小时是颈椎中途最重要的恢复窗口。饭后平躺20分钟效果非常好。</div>
+  </div>
+  <div style="background:var(--bg);border-radius:var(--r);padding:14px;font-size:13px;color:var(--t2);line-height:1.8;">
+    <b style="color:var(--t1);display:block;margin-bottom:4px;">关于"散步后再工作一下"</b>
+    这是颈椎恢复最大的阻碍。散步让肌肉刚开始放松，回来坐下立刻拉紧。每次"再工作一下"都在延迟你的恢复进度。
+  </div>
+</div>
+
+</div><!-- end app -->
+
+<div class="bnav">
+  <button class="bn on" onclick="goPage('today',this)" id="bn-today"><span class="bn-ico">📋</span><span class="bn-lbl">今天</span></button>
+  <button class="bn" onclick="goPage('history',this)" id="bn-history"><span class="bn-ico">📅</span><span class="bn-lbl">历史</span></button>
+  <button class="bn" onclick="goPage('alarms',this)" id="bn-alarms"><span class="bn-ico">⏰</span><span class="bn-lbl">闹钟</span></button>
+  <button class="bn" onclick="goPage('rules',this)" id="bn-rules"><span class="bn-ico">🛡</span><span class="bn-lbl">规则</span></button>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Schedule definition ──────────────────────────────────────────
+const BLOCKS = [
+  {id:'sleep',   time:'01:00–10:00', dur:'9h',    name:'深度睡眠',       desc:'颈椎修复主要时间 · 手机放床外 · 不接消息', stripe:'s-sleep',  badge:'bpu', bl:'睡眠'},
+  {id:'morning', time:'10:00–10:30', dur:'30min',  name:'晨间缓冲',       desc:'洗漱早餐 · 不看手机 · 做5分钟颈部热身', stripe:'s-morning',badge:'bam', bl:'缓冲'},
+  {id:'w1',      time:'10:30–11:30', dur:'60min',  name:'深度工作 Block①', desc:'今天最重要的一件事 · 开发客户 / 重要提案', stripe:'s-work',   badge:'bbl', bl:'工作'},
+  {id:'n1',      time:'11:30–11:45', dur:'15min',  name:'活动休息 + 颈椎拉伸①', desc:'起身 · 左右转头5次 · 低头抬头5次 · 肩膀绕圈 · 喝水', stripe:'s-neck',  badge:'bco', bl:'颈椎'},
+  {id:'w2',      time:'11:45–12:00', dur:'15min',  name:'深度工作 Block②', desc:'收尾上午的任务', stripe:'s-work',   badge:'bbl', bl:'工作'},
+  {id:'lunch',   time:'12:00–14:00', dur:'2h',     name:'午饭 + 午休',    desc:'离开屏幕吃饭 · 饭后平躺20分钟 · 颈椎中途最重要的恢复', stripe:'s-break',  badge:'bgr', bl:'休息'},
+  {id:'w3',      time:'14:00–15:00', dur:'60min',  name:'深度工作 Block③', desc:'客户跟进 · 回邮件 · 项目推进', stripe:'s-work',   badge:'bbl', bl:'工作'},
+  {id:'n2',      time:'15:00–15:15', dur:'15min',  name:'活动休息 + 颈椎拉伸②', desc:'必须起身 · 颈椎拉伸 · 走动一圈 · 倒杯水', stripe:'s-neck',  badge:'bco', bl:'颈椎'},
+  {id:'w4',      time:'15:15–16:15', dur:'60min',  name:'深度工作 Block④', desc:'执行工作 · 内容制作 · 达人筛选', stripe:'s-work',   badge:'bbl', bl:'工作'},
+  {id:'n3',      time:'16:15–16:30', dur:'15min',  name:'短休息',          desc:'起身活动 · 颈部放松 · 眼睛休息', stripe:'s-neck',  badge:'bco', bl:'颈椎'},
+  {id:'w5',      time:'16:30–17:30', dur:'60min',  name:'深度工作 Block⑤', desc:'执行 / 推进项目', stripe:'s-work',   badge:'bbl', bl:'工作'},
+  {id:'wrap',    time:'17:30–18:00', dur:'30min',  name:'每日复盘',        desc:'整理明日任务 · 记录今日进展 · 关闭工作状态', stripe:'s-light',  badge:'bgy', bl:'复盘'},
+  {id:'light',   time:'18:00–19:00', dur:'1h',     name:'轻工作收尾（可选）', desc:'只处理低强度任务 · 回消息 · 不开新任务', stripe:'s-light',  badge:'bgy', bl:'轻工作'},
+  {id:'dinner',  time:'19:00–20:00', dur:'1h',     name:'晚饭 + 散步',    desc:'19:00 准时放下电脑 · 吃饭 · 出门散步1小时', stripe:'s-walk',   badge:'bgn', bl:'休息'},
+  {id:'relax',   time:'20:00–23:00', dur:'3h',     name:'恢复模式',        desc:'低强度放松 · 看剧/读书 · 不碰工作 · 颈椎彻底放松', stripe:'s-wind',   badge:'bgy', bl:'放松'},
+  {id:'sleep2',  time:'23:00–01:00', dur:'2h',     name:'睡前准备',        desc:'调暗灯光 · 放下手机 · 01:00前必须躺下', stripe:'s-wind',   badge:'bgy', bl:'准备'},
+];
+
+const ALARMS = [
+  {time:'10:00', name:'起床',            desc:'起床，不看手机，先做颈部热身', ico:'🌅'},
+  {time:'10:30', name:'深度工作开始①',   desc:'专注最重要的一件事', ico:'💼'},
+  {time:'11:30', name:'颈椎拉伸①',       desc:'必须起身！转头、低头抬头各5次', ico:'🦴'},
+  {time:'11:45', name:'深度工作②',       desc:'15分钟收尾上午任务', ico:'💼'},
+  {time:'12:00', name:'午饭时间',         desc:'离开屏幕，好好吃饭', ico:'🥗'},
+  {time:'14:00', name:'下午工作开始③',   desc:'客户跟进、邮件处理', ico:'💼'},
+  {time:'15:00', name:'颈椎拉伸②',       desc:'必须起身！颈椎拉伸+走动', ico:'🦴'},
+  {time:'15:15', name:'深度工作④',       desc:'执行工作、内容制作', ico:'💼'},
+  {time:'16:15', name:'短休息',           desc:'起身活动，眼睛休息', ico:'🦴'},
+  {time:'16:30', name:'深度工作⑤',       desc:'最后一个工作块', ico:'💼'},
+  {time:'17:30', name:'每日复盘',         desc:'整理明日任务，准备收工', ico:'📋'},
+  {time:'19:00', name:'放下电脑！',       desc:'准时下班，去吃饭+散步', ico:'🚶'},
+  {time:'23:00', name:'睡前准备',         desc:'放下手机，准备入睡', ico:'🌙'},
+  {time:'01:00', name:'必须入睡！',       desc:'放下所有东西，颈椎需要休息', ico:'🛑'},
+];
+
+const SECTIONS = [
+  {label:'🌙 睡眠', ids:['sleep']},
+  {label:'🌅 上午', ids:['morning','w1','n1','w2']},
+  {label:'☀️ 午间', ids:['lunch']},
+  {label:'🔵 下午', ids:['w3','n2','w4','n3','w5']},
+  {label:'🌆 傍晚', ids:['wrap','light']},
+  {label:'🌃 晚上', ids:['dinner','relax','sleep2']},
+];
+
+// ── State ────────────────────────────────────────────────────────
+let st = {}, mood = '', neckDone = false;
+function todayKey(){ return new Date().toISOString().slice(0,10); }
+function getDB(){ try{return JSON.parse(localStorage.getItem('dh_v5')||'{}')}catch(e){return{}} }
+function putDB(db){ try{localStorage.setItem('dh_v5',JSON.stringify(db))}catch(e){} }
+
+function initSt(){
+  st={};
+  BLOCKS.forEach(b=>{ st[b.id]={status:'',note:''}; });
+}
+
+function loadToday(){
+  initSt();
+  const d=getDB()[todayKey()];
+  if(d){
+    if(d.blocks) Object.assign(st,d.blocks);
+    document.getElementById('s-in').value=d.sleepIn||'01:00';
+    document.getElementById('s-out').value=d.sleepOut||'10:00';
+    document.getElementById('s-q').value=d.sleepQ||'';
+    document.getElementById('day-note').value=d.note||'';
+    mood=d.mood||''; neckDone=d.neckDone||false;
+    if(mood) document.querySelectorAll('.mb').forEach(b=>{if(b.dataset.m===mood)b.classList.add('on');});
+    updateNtcb();
+  }
+}
+
+// ── Render blocks ─────────────────────────────────────────────────
+function renderBlocks(){
+  let html='';
+  SECTIONS.forEach(sec=>{
+    html+=`<div class="blk-section-label">${sec.label}</div>`;
+    sec.ids.forEach(id=>{
+      const b=BLOCKS.find(x=>x.id===id); if(!b) return;
+      const s=st[b.id]||{status:'',note:''};
+      const done=s.status==='done', skip=s.status==='skip';
+      html+=`
+      <div class="blk" id="blk-${b.id}">
+        <div class="blk-head" onclick="toggleExp('${b.id}')">
+          <div class="blk-stripe ${b.stripe}"></div>
+          <div class="blk-body">
+            <div class="blk-meta">
+              <span class="blk-time">${b.time}</span>
+              <span class="blk-dur">${b.dur}</span>
+            </div>
+            <div class="blk-name-row">
+              <span class="blk-name">${b.name}</span>
+              <span class="badge ${b.badge}">${b.bl}</span>
+            </div>
+            <div class="blk-desc">${b.desc}</div>
+            ${s.note?`<div class="blk-note-preview">📝 ${s.note}</div>`:''}
+          </div>
+          <div class="blk-check">
+            <div class="chk ${done?'done':skip?'skip':''}" onclick="event.stopPropagation();cycleChk('${b.id}')">
+              ${done?'✓':skip?'跳':''}
+            </div>
+          </div>
+        </div>
+        <div class="blk-expand" id="exp-${b.id}">
+          <div class="exp-lbl">实际情况备注</div>
+          <textarea class="exp-ta" id="nt-${b.id}" placeholder="写下这个时段做了什么...">${s.note||''}</textarea>
+          <div class="exp-acts">
+            <div class="ea green" onclick="setChk('${b.id}','done')">✓ 完成</div>
+            <div class="ea gray"  onclick="setChk('${b.id}','skip')">跳过</div>
+            <div class="ea"       onclick="setChk('${b.id}','')">清除</div>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById('blocks-wrap').innerHTML=html;
+  updateProg();
+}
+
+function toggleExp(id){
+  document.getElementById('exp-'+id).classList.toggle('open');
+}
+function cycleChk(id){
+  const c=st[id].status;
+  st[id].status=c===''?'done':c==='done'?'skip':'';
+  renderBlocks();
+}
+function setChk(id,val){
+  const ta=document.getElementById('nt-'+id);
+  if(ta) st[id].note=ta.value;
+  st[id].status=val;
+  renderBlocks();
+  if(val) document.getElementById('exp-'+id).classList.add('open');
+}
+function updateProg(){
+  const tot=BLOCKS.length;
+  const done=BLOCKS.filter(b=>st[b.id]&&st[b.id].status==='done').length;
+  const skip=BLOCKS.filter(b=>st[b.id]&&st[b.id].status==='skip').length;
+  const pct=Math.round(done/tot*100);
+  document.getElementById('prog-txt').textContent=`${done}/${tot}`;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('pm-d').textContent=done;
+  document.getElementById('pm-s').textContent=skip;
+  document.getElementById('pm-p').textContent=tot-done-skip;
+}
+
+// ── Mood / neck ───────────────────────────────────────────────────
+function setMood(el){
+  document.querySelectorAll('.mb').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on'); mood=el.dataset.m;
+}
+function toggleNeck(){ neckDone=!neckDone; updateNtcb(); }
+function updateNtcb(){
+  const cb=document.getElementById('ntcb');
+  cb.className='ntcb'+(neckDone?' on':'');
+  cb.textContent=neckDone?'✓':'';
+}
+
+// ── Save ──────────────────────────────────────────────────────────
+function saveDay(){
+  BLOCKS.forEach(b=>{ const ta=document.getElementById('nt-'+b.id); if(ta) st[b.id].note=ta.value; });
+  const db=getDB();
+  db[todayKey()]={
+    date:todayKey(),
+    sleepIn:document.getElementById('s-in').value,
+    sleepOut:document.getElementById('s-out').value,
+    sleepQ:document.getElementById('s-q').value,
+    mood, neckDone,
+    note:document.getElementById('day-note').value,
+    blocks:JSON.parse(JSON.stringify(st)),
+    saved:new Date().toISOString()
+  };
+  putDB(db);
+  showToast('✓ 已保存');
+}
+
+// ── History ───────────────────────────────────────────────────────
+function calcSleep(a,b){
+  if(!a||!b) return '—';
+  const [ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number);
+  let m=(bh*60+bm)-(ah*60+am); if(m<0)m+=1440;
+  return (m/60).toFixed(1)+'h';
+}
+function renderHistory(){
+  const db=getDB(), keys=Object.keys(db).sort().reverse();
+  const el=document.getElementById('hist-list');
+  if(!keys.length){el.innerHTML='<div class="hist-empty">还没有历史记录<br>先保存今天的记录吧</div>';return;}
+  el.innerHTML=keys.map(k=>{
+    const d=db[k];
+    const sl=calcSleep(d.sleepIn,d.sleepOut);
+    const slOk=parseFloat(sl)>=7;
+    const blks=d.blocks||{};
+    const doneN=Object.values(blks).filter(v=>v.status==='done').length;
+    const neckIds=['n1','n2','n3'];
+    const neckN=neckIds.filter(id=>blks[id]&&blks[id].status==='done').length;
+    const ds=new Date(k+'T12:00:00').toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'});
+    return `
+    <div class="hday">
+      <div class="hday-head" onclick="toggleH('${k}')">
+        <div>
+          <div class="hday-date">${d.mood||''} ${ds}</div>
+          <div class="hday-meta">睡眠 ${sl} · 打卡 ${doneN}/${BLOCKS.length} · 颈椎 ${neckN}/3</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+          <span class="hbadge" style="background:${slOk?'#E1F5EE':'#FAECE7'};color:${slOk?'#1D9E75':'#D85A30'};">${slOk?'睡眠达标':'睡眠不足'}</span>
+          <span class="hbadge" style="background:#EEEDFE;color:#534AB7;">${neckN===3?'颈椎✓':'颈椎'+neckN+'/3'}</span>
+        </div>
+      </div>
+      <div class="hday-body" id="hb-${k}">
+        <div class="hr"><span class="hl">入睡</span><span>${d.sleepIn||'—'}</span></div>
+        <div class="hr"><span class="hl">起床</span><span>${d.sleepOut||'—'}</span></div>
+        <div class="hr"><span class="hl">睡眠时长</span><span>${sl}</span></div>
+        <div class="hr"><span class="hl">睡眠质量</span><span>${d.sleepQ||'—'}</span></div>
+        <div class="hr"><span class="hl">颈椎活动</span><span>${d.neckDone?'✓ 是':'—'}</span></div>
+        <div style="margin-top:10px;">
+          ${BLOCKS.map(b=>{
+            const bs=blks[b.id]||{};
+            const ic=bs.status==='done'?'✅':bs.status==='skip'?'⏭':'⬜';
+            return `<div class="hbi"><span style="flex-shrink:0;width:22px;">${ic}</span><div><div>${b.time} <b>${b.name}</b></div>${bs.note?`<div class="hbi-note">${bs.note}</div>`:''}</div></div>`;
+          }).join('')}
+        </div>
+        ${d.note?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd);font-size:13px;color:var(--t2);line-height:1.6;">${d.note}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleH(k){ document.getElementById('hb-'+k).classList.toggle('open'); }
+
+// ── Alarms ────────────────────────────────────────────────────────
+function renderAlarms(){
+  document.getElementById('alarm-list').innerHTML=ALARMS.map(a=>`
+    <div class="alarm-item">
+      <div class="alarm-time">${a.time}</div>
+      <div class="alarm-info">
+        <div class="alarm-name">${a.name}</div>
+        <div class="alarm-desc">${a.desc}</div>
+      </div>
+      <div class="alarm-icon">${a.ico}</div>
+    </div>`).join('');
+}
+
+// ── Navigation ────────────────────────────────────────────────────
+function goPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.bn').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  if(el.classList.contains('tab')) el.classList.add('on');
+  document.getElementById('bn-'+id).classList.add('on');
+  if(id==='history') renderHistory();
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+const nd=new Date();
+document.getElementById('hdr-date').textContent=nd.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'});
+loadToday();
+renderBlocks();
+renderAlarms();
+</script>
+</body>
+</html>
