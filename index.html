@@ -531,6 +531,37 @@ document.getElementById('hdr-date').textContent=nd.toLocaleDateString('zh-CN',{m
 loadToday();
 renderBlocks();
 renderAlarms();
+  // 日期判断，隔天自动清空勾选框
+const today = new Date().toLocaleDateString();
+const lastDay = localStorage.getItem("plan‑date");
+
+// 日期不一样就清空所有复选框
+if(lastDay !== today){
+  document.querySelectorAll("input[type=checkbox]").forEach(box=>box.checked = false);
+  localStorage.setItem("plan‑date",today);
+}
+
+// 勾选时自动保存状态
+document.querySelectorAll("input[type=checkbox]").forEach(checkbox=>{
+  checkbox.addEventListener("change",()=>{
+    let checkState = {};
+    document.querySelectorAll("input[type=checkbox]").forEach((item,i)=>{
+      checkState[i] = item.checked;
+    })
+    localStorage.setItem("plan‑data",JSON.stringify(checkState));
+  })
+})
+
+// 页面加载时恢复今日勾选
+window.onload = function(){
+  const saved = localStorage.getItem("plan‑data");
+  if(saved){
+    const checkState = JSON.parse(saved);
+    document.querySelectorAll("input[type=checkbox]").forEach((item,i)=>{
+      if(checkState[i]) item.checked = checkState[i];
+    })
+  }
+}
 </script>
 </body>
 </html>
